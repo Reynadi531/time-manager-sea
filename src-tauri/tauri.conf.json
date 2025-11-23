@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "time-manager-sea",
-        "width": 800,
-        "height": 600
+        "title": "Time Manager",
+        "width": 1800,
+        "height": 900,
+        "resizable": true,
+        "fullscreen": false
       }
     ],
     "security": {
