@@ -42,7 +42,7 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar className="bg-slate-800">
+    <Sidebar className="bg-slate-800 border-gray-500">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xl font-bold tracking-wider text-white my-4">Time Manager SEA</SidebarGroupLabel>
