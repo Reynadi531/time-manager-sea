@@ -9,7 +9,7 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from "@/components/ui/shadcn-io/kanban";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -18,15 +18,76 @@ export const Route = createFileRoute("/")({
 
 
 function Index() {
-  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+  // -------- State --------
+  const [boards, setBoards] = useState<Board[]>([]); // list semua board
+  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null); // board yang dipilih
+  const [columns, setColumns] = useState<Column[]>([]); // column dari board yang dipilih
+  const [tasksByColumn, setTasksByColumn] = useState<Record<number, Task[]>>({}); // task per column
+  const [newBoardName, setNewBoardName] = useState(""); // input nama board baru
+  const [showModal, setShowModal] = useState(false); // modal create board
+  const columnsToBeRendered = [
+    { id: 0, name: 'To Do', color: '#6B7280' },
+    { id: 1, name: 'In Progress', color: '#F59E0B' },
+    { id: 2, name: 'Done', color: '#10B981' },
+  ];
 
-  const [boards, setBoards] = useState<Board[]>([]);
-  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
-  const [columns, setColumns] = useState<Column[]>([]);
-  const [tasksByColumn, setTasksByColumn] = useState<Record<number, Task[]>>({});
-  const [newBoardName, setNewBoardName] = useState("");
+  const [showBoardModal, setShowBoardModal] = useState(false);
+
+  // Modal create task
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskColumnId, setTaskColumnId] = useState<number | null>(null);
+
+  // -------- Fungsi --------
+  const loadBoards = async () => {
+    const data = await boardApi.getAll();
+    setBoards(data);
+  };
+
+  const loadColumns = async (boardId: number) => {
+    const cols = await columnApi.getByBoard(boardId);
+    setColumns(cols);
+
+    const tasksMap: Record<number, Task[]> = {};
+    for (const col of cols) {
+      tasksMap[col.id] = await taskApi.getByColumn(col.id);
+    }
+    setTasksByColumn(tasksMap);
+  };
+
+  const createBoard = async () => {
+    if (!newBoardName.trim()) return;
+    const newBoard = await boardApi.create(newBoardName);
+    setBoards([...boards, newBoard]);
+    setNewBoardName("");
+    setShowModal(false);
+  };
+
+  const createTask = async () => {
+    if (taskColumnId === null || !taskTitle.trim()) return;
+
+    const tasks = tasksByColumn[taskColumnId] || [];
+    const newTask = await taskApi.create(taskColumnId, taskTitle, tasks.length);
+
+    setTasksByColumn({
+      ...tasksByColumn,
+      [taskColumnId]: [...tasks, newTask],
+    });
+
+    setShowTaskModal(false);
+    setTaskTitle("");
+    setTaskColumnId(null);
+  };
 
 
+  // -------- Create Task --------
+  const openTaskModal = (columnId: number) => {
+    setTaskColumnId(columnId);
+    setTaskTitle("");
+    setShowTaskModal(true);
+  };
+
+  // -------- Effects --------
   useEffect(() => {
     loadBoards();
   }, []);
@@ -37,40 +98,7 @@ function Index() {
     }
   }, [selectedBoard]);
 
-  const loadBoards = async () => {
-    const data = await boardApi.getAll();
-    setBoards(data);
-    if (data.length > 0) {
-      setSelectedBoard(data[0]);
-    }
-  };
-
-  const loadColumns = async (boardId: number) => {
-    const cols = await columnApi.getByBoard(boardId);
-    setColumns(cols);
-
-    // Load tasks for each column
-    const tasksMap: Record<number, Task[]> = {};
-    for (const col of cols) {
-      tasksMap[col.id] = await taskApi.getByColumn(col.id);
-    }
-    setTasksByColumn(tasksMap);
-  };
-
-  const createBoard = async (name: string) => {
-    const newBoard = await boardApi.create(name);
-    setBoards([...boards, newBoard]);
-  };
-
-  const createTask = async (columnId: number, title: string) => {
-    const tasks = tasksByColumn[columnId] || [];
-    const newTask = await taskApi.create(columnId, title, tasks.length);
-    setTasksByColumn({
-      ...tasksByColumn,
-      [columnId]: [...tasks, newTask],
-    });
-  };
-
+  // -------- Date formatter --------
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -83,93 +111,154 @@ function Index() {
   });
 
 
-
   return (
     <>
       <Layout>
         <div className="container">
-          <KanbanProvider
-            className="h-full"
-            columns={columns.map((col) => ({
-              id: col.id.toString(),
-              name: col.name,
-              color:
-                col.name.toLowerCase() === "to do"
-                  ? "#6B7280"
-                  : col.name.toLowerCase() === "in progress"
-                    ? "#F59E0B"
-                    : col.name.toLowerCase() === "done"
-                      ? "#10B981"
-                      : "#6B7280", // default gray
-            }))}
-            data={Object.values(tasksByColumn)
-              .flat()
-              .map((task) => ({
-                id: task.id.toString(),
-                name: task.title,
-                column: task.column_id.toString(),
-                description: task.description,
-                dueDate: task.due_date ? new Date(task.due_date) : null,
-                priority: task.priority,
-              }))}
-          >
-            {(column) => (
-              <KanbanBoard id={column.id} key={column.id}>
-                <KanbanHeader>
-                  <div className="flex flex-row justify-between items-center">
-                    <div className="flex gap-2 items-center">
-                      <div
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: column.color }}
-                      />
-                      <span>{column.name}</span>
+
+          {/* === BOARD LIST & CREATE BOARD === */}
+          {!selectedBoard && (
+            <>
+              <Button onClick={() => setShowBoardModal(true)}>New Board</Button>
+
+              {showBoardModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <div className="bg-white rounded p-6 w-96">
+                    <h2 className="text-lg font-bold mb-4">Create Board</h2>
+                    <input
+                      type="text"
+                      placeholder="Board name..."
+                      value={newBoardName}
+                      onChange={(e) => setNewBoardName(e.target.value)}
+                      className="border rounded px-2 py-1 w-full mb-4"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowBoardModal(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={createBoard}>Create</Button>
                     </div>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => createTask(parseInt(column.id), column.name)}
+                  </div>
+                </div>
+              )}
+
+              {/* Boards */}
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                {boards.map((b) => (
+                  <div
+                    key={b.id}
+                    className="border rounded p-4 flex justify-between items-center hover:bg-gray-700"
+                  >
+                    <span
+                      className="cursor-pointer"
+                      onClick={() => setSelectedBoard(b)}
                     >
-                      + Add Task
+                      {b.name}
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        if (!confirm(`Are you sure you want to delete "${b.name}"?`)) return;
+                        await boardApi.delete(b.id);
+                        setBoards(boards.filter((board) => board.id !== b.id));
+                      }}
+                    >
+                      Delete
                     </Button>
                   </div>
-                </KanbanHeader>
+                ))}
+              </div>
 
-                <KanbanCards id={column.id}>
-                  {(item) => {
-                    const task = Object.values(tasksByColumn)
-                      .flat()
-                      .find((t) => t.id.toString() === item.id)!;
+            </>
+          )}
 
-                    return (
-                      <KanbanCard
-                        column={item.column}
-                        id={item.id}
-                        key={item.id}
-                        name={item.name}
-                      >
-                        <div className="flex flex-col gap-1 mb-1">
-                          <p className="m-0 flex-1 font-medium text-sm">{task.title}</p>
-                          {task.description && (
-                            <p className="text-muted-foreground text-xs">
-                              {task.description}
-                            </p>
-                          )}
+          {/* === KANBAN BOARD === */}
+          {selectedBoard && (
+            <>
+              <Button className="mb-4" onClick={() => setSelectedBoard(null)}>
+                Back to Projects
+              </Button>
+
+              <KanbanProvider
+                className="h-full"
+                columns={columnsToBeRendered.map((c) => ({
+                  id: c.id.toString(),
+                  name: c.name,
+                  color: c.color,
+                }))}
+                data={Object.values(tasksByColumn)
+                  .flat()
+                  .map((t) => ({
+                    id: t.id.toString(),
+                    name: t.title,
+                    column: t.column_id.toString(),
+                  }))}
+              >
+                {(column) => (
+                  <KanbanBoard id={column.id} key={column.id}>
+                    <KanbanHeader>
+                      <div className="flex flex-row justify-between items-center">
+                        <div className="flex gap-2 items-center">
+                          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color }} />
+                          <span>{column.name}</span>
                         </div>
-                        {task.due_date && (
-                          <p className="m-0 text-muted-foreground text-xs">
-                            {shortDateFormatter.format(new Date(task.due_date))}
-                          </p>
-                        )}
-                      </KanbanCard>
-                    );
-                  }}
-                </KanbanCards>
-              </KanbanBoard>
-            )}
-          </KanbanProvider>
+                        <Button variant="default" size="sm" onClick={() => openTaskModal(parseInt(column.id))}>
+                          + Add Task
+                        </Button>
+                      </div>
+                    </KanbanHeader>
+
+                    <KanbanCards id={column.id}>
+                      {(item) => {
+                        const task = Object.values(tasksByColumn)
+                          .flat()
+                          .find((t) => t.id.toString() === item.id)!;
+
+                        return (
+                          <KanbanCard column={item.column} id={item.id} key={item.id} name={item.name}>
+                            <div className="flex items-start justify-between gap-2 h-12 mb-1">
+                              <p className="m-0 flex-1 font-medium text-sm">{task.title}</p>
+                            </div>
+                            <p className="m-0 text-muted-foreground text-xs">
+                              {task.due_date
+                                ? shortDateFormatter.format(new Date(task.due_date)) + " - " + dateFormatter.format(new Date(task.due_date))
+                                : "No due date"}
+                            </p>
+                          </KanbanCard>
+                        );
+                      }}
+                    </KanbanCards>
+                  </KanbanBoard>
+                )}
+              </KanbanProvider>
+
+              {/* Task Modal */}
+              {showTaskModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <div className="bg-white rounded p-6 w-96">
+                    <h2 className="text-lg font-bold mb-4">Create Task</h2>
+                    <input
+                      type="text"
+                      placeholder="Task title..."
+                      value={taskTitle}
+                      onChange={(e) => setTaskTitle(e.target.value)}
+                      className="border rounded px-2 py-1 w-full mb-4"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowTaskModal(false)}>
+                        Cancel
+                      </Button>
+
+                      {/* FIXME: This doesn't work */}
+                      <Button onClick={() => createTask()}>Create</Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
-
-
       </Layout>
     </>
   );
