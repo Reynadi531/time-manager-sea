@@ -20,7 +20,7 @@ const items = [
   },
   {
     title: "My Task",
-    url: "#",
+    url: "/my-task",
     icon: Pencil,
   },
   {
@@ -30,12 +30,12 @@ const items = [
   },
   {
     title: "Timesheet",
-    url: "#",
+    url: "/timesheet",
     icon: Clock,
   },
   {
     title: "Reports",
-    url: "#",
+    url: "/reports",
     icon: Mail,
   },
 ]
