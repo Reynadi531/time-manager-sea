@@ -25,7 +25,7 @@ const buttons = [
   },
   {
     key: 2,
-    url: "/",
+    url: "/boards/new",
     icon: PlusIcon,
   },
 ]
