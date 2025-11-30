@@ -1,16 +1,15 @@
 use crate::db::AppState;
 use crate::entities::{prelude::*, task};
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
+use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TaskResponse {
     pub id: i32,
-    pub column_id: i32,
     pub title: String,
     pub description: Option<String>,
-    pub position: i32,
+    pub status: String,
     pub priority: Option<String>,
     pub due_date: Option<String>,
     pub created_at: String,
@@ -19,17 +18,15 @@ pub struct TaskResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateTaskRequest {
-    pub column_id: i32,
     pub title: String,
     pub description: Option<String>,
-    pub position: i32,
+    pub status: String,
     pub priority: Option<String>,
     pub due_date: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateTaskRequest {
-    pub column_id: Option<i32>,
     pub title: Option<String>,
     pub description: Option<String>,
     pub position: Option<i32>,
@@ -41,10 +38,9 @@ impl From<task::Model> for TaskResponse {
     fn from(model: task::Model) -> Self {
         Self {
             id: model.id,
-            column_id: model.column_id,
             title: model.title,
             description: model.description,
-            position: model.position,
+            status: model.status,
             priority: model.priority,
             due_date: model.due_date.map(|d| d.to_string()),
             created_at: model.created_at.to_string(),
@@ -54,18 +50,11 @@ impl From<task::Model> for TaskResponse {
 }
 
 #[tauri::command]
-pub async fn get_tasks_by_column(
-    state: State<'_, AppState>,
-    column_id: i32,
-) -> Result<Vec<TaskResponse>, String> {
+pub async fn get_all_tasks(state: State<'_, AppState>) -> Result<Vec<TaskResponse>, String> {
     let db = state.db.lock().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
 
-    let tasks = Task::find()
-        .filter(task::Column::ColumnId.eq(column_id))
-        .all(db)
-        .await
-        .map_err(|e| e.to_string())?;
+    let tasks = Task::find().all(db).await.map_err(|e| e.to_string())?;
 
     Ok(tasks.into_iter().map(TaskResponse::from).collect())
 }
@@ -105,10 +94,9 @@ pub async fn create_task(
     };
 
     let new_task = task::ActiveModel {
-        column_id: Set(request.column_id),
         title: Set(request.title),
         description: Set(request.description),
-        position: Set(request.position),
+        status: Set(request.status),
         priority: Set(request.priority),
         due_date: Set(due_date),
         created_at: Set(now_fixed),
@@ -141,17 +129,11 @@ pub async fn update_task(
 
     let mut task: task::ActiveModel = task.into();
 
-    if let Some(column_id) = request.column_id {
-        task.column_id = Set(column_id);
-    }
     if let Some(title) = request.title {
         task.title = Set(title);
     }
     if request.description.is_some() {
         task.description = Set(request.description);
-    }
-    if let Some(position) = request.position {
-        task.position = Set(position);
     }
     if request.priority.is_some() {
         task.priority = Set(request.priority);
@@ -183,4 +165,26 @@ pub async fn delete_task(state: State<'_, AppState>, id: i32) -> Result<(), Stri
     task.delete(db).await.map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn update_task_status(
+    state: State<'_, AppState>,
+    id: i32,
+    status: String,
+) -> Result<TaskResponse, String> {
+    let db = state.db.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+    let task = Task::find_by_id(id)
+        .one(db)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| format!("Task with id {} not found", id))?;
+    let now = chrono::Utc::now();
+    let now_fixed = now.with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+    let mut task: task::ActiveModel = task.into();
+    task.status = Set(status);
+    task.updated_at = Set(now_fixed);
+    let updated_task = task.update(db).await.map_err(|e| e.to_string())?;
+    Ok(TaskResponse::from(updated_task))
 }

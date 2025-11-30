@@ -2,6 +2,4 @@
 
 pub mod prelude;
 
-pub mod board;
-pub mod column;
 pub mod task;

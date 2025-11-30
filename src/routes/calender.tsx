@@ -175,10 +175,9 @@ function RouteComponent() {
 
   return (
     <Layout>
-      <div className="p-3 sm:p-4 md:p-6 h-full flex flex-col overflow-hidden bg-[#322350]rounded-xl">
-        {/* Header */}
+      <div className=" h-full flex flex-col overflow-hidden bg-[#322350]rounded-xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 flex-shrink-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
             <span className="hidden sm:inline text-white">Task Calendar</span>
             <span className="sm:hidden">Calendar</span>
@@ -215,10 +214,7 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-
-        {/* Calendar Grid */}
         <Card className="bg-white border-purple-200 p-2 sm:p-4 flex-1 flex flex-col overflow-hidden shadow-lg">
-          {/* Day headers */}
           <div className="grid grid-cols-7 gap-px mb-px flex-shrink-0">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div
@@ -230,13 +226,10 @@ function RouteComponent() {
             ))}
           </div>
 
-          {/* Calendar days */}
           <div className="grid grid-cols-7 gap-px bg-purple-200 flex-1 auto-rows-fr">
             {renderCalendar()}
           </div>
         </Card>
-
-        {/* Legend */}
         <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-600 text-white shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-300 rounded shadow-sm"></div>

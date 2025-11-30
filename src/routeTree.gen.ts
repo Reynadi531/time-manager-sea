@@ -14,10 +14,6 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as MyTaskRouteImport } from './routes/my-task'
 import { Route as CalenderRouteImport } from './routes/calender'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BoardsNewRouteImport } from './routes/boards/new'
-import { Route as BoardsBoardsIdIndexRouteImport } from './routes/boards/$boardsId/index'
-import { Route as BoardsBoardsIdDeleteRouteImport } from './routes/boards/$boardsId/delete'
-import { Route as BoardsBoardsIdTaskNewRouteImport } from './routes/boards/$boardsId/task/new'
 
 const TimesheetRoute = TimesheetRouteImport.update({
   id: '/timesheet',
@@ -44,26 +40,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BoardsNewRoute = BoardsNewRouteImport.update({
-  id: '/boards/new',
-  path: '/boards/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoardsBoardsIdIndexRoute = BoardsBoardsIdIndexRouteImport.update({
-  id: '/boards/$boardsId/',
-  path: '/boards/$boardsId/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoardsBoardsIdDeleteRoute = BoardsBoardsIdDeleteRouteImport.update({
-  id: '/boards/$boardsId/delete',
-  path: '/boards/$boardsId/delete',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoardsBoardsIdTaskNewRoute = BoardsBoardsIdTaskNewRouteImport.update({
-  id: '/boards/$boardsId/task/new',
-  path: '/boards/$boardsId/task/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,10 +47,6 @@ export interface FileRoutesByFullPath {
   '/my-task': typeof MyTaskRoute
   '/reports': typeof ReportsRoute
   '/timesheet': typeof TimesheetRoute
-  '/boards/new': typeof BoardsNewRoute
-  '/boards/$boardsId/delete': typeof BoardsBoardsIdDeleteRoute
-  '/boards/$boardsId': typeof BoardsBoardsIdIndexRoute
-  '/boards/$boardsId/task/new': typeof BoardsBoardsIdTaskNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,10 +54,6 @@ export interface FileRoutesByTo {
   '/my-task': typeof MyTaskRoute
   '/reports': typeof ReportsRoute
   '/timesheet': typeof TimesheetRoute
-  '/boards/new': typeof BoardsNewRoute
-  '/boards/$boardsId/delete': typeof BoardsBoardsIdDeleteRoute
-  '/boards/$boardsId': typeof BoardsBoardsIdIndexRoute
-  '/boards/$boardsId/task/new': typeof BoardsBoardsIdTaskNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,45 +62,13 @@ export interface FileRoutesById {
   '/my-task': typeof MyTaskRoute
   '/reports': typeof ReportsRoute
   '/timesheet': typeof TimesheetRoute
-  '/boards/new': typeof BoardsNewRoute
-  '/boards/$boardsId/delete': typeof BoardsBoardsIdDeleteRoute
-  '/boards/$boardsId/': typeof BoardsBoardsIdIndexRoute
-  '/boards/$boardsId/task/new': typeof BoardsBoardsIdTaskNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/calender'
-    | '/my-task'
-    | '/reports'
-    | '/timesheet'
-    | '/boards/new'
-    | '/boards/$boardsId/delete'
-    | '/boards/$boardsId'
-    | '/boards/$boardsId/task/new'
+  fullPaths: '/' | '/calender' | '/my-task' | '/reports' | '/timesheet'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/calender'
-    | '/my-task'
-    | '/reports'
-    | '/timesheet'
-    | '/boards/new'
-    | '/boards/$boardsId/delete'
-    | '/boards/$boardsId'
-    | '/boards/$boardsId/task/new'
-  id:
-    | '__root__'
-    | '/'
-    | '/calender'
-    | '/my-task'
-    | '/reports'
-    | '/timesheet'
-    | '/boards/new'
-    | '/boards/$boardsId/delete'
-    | '/boards/$boardsId/'
-    | '/boards/$boardsId/task/new'
+  to: '/' | '/calender' | '/my-task' | '/reports' | '/timesheet'
+  id: '__root__' | '/' | '/calender' | '/my-task' | '/reports' | '/timesheet'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -141,10 +77,6 @@ export interface RootRouteChildren {
   MyTaskRoute: typeof MyTaskRoute
   ReportsRoute: typeof ReportsRoute
   TimesheetRoute: typeof TimesheetRoute
-  BoardsNewRoute: typeof BoardsNewRoute
-  BoardsBoardsIdDeleteRoute: typeof BoardsBoardsIdDeleteRoute
-  BoardsBoardsIdIndexRoute: typeof BoardsBoardsIdIndexRoute
-  BoardsBoardsIdTaskNewRoute: typeof BoardsBoardsIdTaskNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,34 +116,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/boards/new': {
-      id: '/boards/new'
-      path: '/boards/new'
-      fullPath: '/boards/new'
-      preLoaderRoute: typeof BoardsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boards/$boardsId/': {
-      id: '/boards/$boardsId/'
-      path: '/boards/$boardsId'
-      fullPath: '/boards/$boardsId'
-      preLoaderRoute: typeof BoardsBoardsIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boards/$boardsId/delete': {
-      id: '/boards/$boardsId/delete'
-      path: '/boards/$boardsId/delete'
-      fullPath: '/boards/$boardsId/delete'
-      preLoaderRoute: typeof BoardsBoardsIdDeleteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boards/$boardsId/task/new': {
-      id: '/boards/$boardsId/task/new'
-      path: '/boards/$boardsId/task/new'
-      fullPath: '/boards/$boardsId/task/new'
-      preLoaderRoute: typeof BoardsBoardsIdTaskNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -221,10 +125,6 @@ const rootRouteChildren: RootRouteChildren = {
   MyTaskRoute: MyTaskRoute,
   ReportsRoute: ReportsRoute,
   TimesheetRoute: TimesheetRoute,
-  BoardsNewRoute: BoardsNewRoute,
-  BoardsBoardsIdDeleteRoute: BoardsBoardsIdDeleteRoute,
-  BoardsBoardsIdIndexRoute: BoardsBoardsIdIndexRoute,
-  BoardsBoardsIdTaskNewRoute: BoardsBoardsIdTaskNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

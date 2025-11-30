@@ -7,11 +7,10 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub column_id: i32,
     pub title: String,
     #[sea_orm(column_type = "Text", nullable)]
     pub description: Option<String>,
-    pub position: i32,
+    pub status: String,
     pub priority: Option<String>,
     pub due_date: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
@@ -19,21 +18,6 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::column::Entity",
-        from = "Column::ColumnId",
-        to = "super::column::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
-    )]
-    Column,
-}
-
-impl Related<super::column::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Column.def()
-    }
-}
+pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
