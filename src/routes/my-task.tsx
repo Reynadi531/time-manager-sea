@@ -23,6 +23,26 @@ function RouteComponent() {
     },
   });
 
+  if (isLoading) {
+    return (
+      <>
+        <Layout>
+          <div>Loading...</div>
+        </Layout>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Layout>
+          <div>Error loading tasks.</div>
+        </Layout>
+      </>
+    );
+  }
+
   return (
     <>
       <Layout>

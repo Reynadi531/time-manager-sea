@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { taskApi } from "@/lib/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const PERMANENT_COLUMNS = [
   { id: "to_do", name: "To Do", color: "#3b82f6" },
@@ -50,19 +50,6 @@ const statusLookup = (id: number) => {
       return "done";
     default:
       return "to_do";
-  }
-};
-
-const statusReverseLookup = (status: string) => {
-  switch (status) {
-    case "to_do":
-      return 1;
-    case "in_progress":
-      return 2;
-    case "done":
-      return 3;
-    default:
-      return 1;
   }
 };
 
