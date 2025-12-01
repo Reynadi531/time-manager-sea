@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { taskApi } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,6 @@ import type { Task } from "@/lib/api";
 export const Route = createFileRoute("/calender")({
   component: RouteComponent,
 });
-
-interface DayTasks {
-  date: Date;
-  tasks: Task[];
-}
 
 function RouteComponent() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -43,7 +38,6 @@ function RouteComponent() {
   };
 
   const getTasksForDate = (date: Date): Task[] => {
-    console.log(data);
     if (!data) return [];
     return data?.filter((task) => {
       if (!task.due_date) return false;
@@ -88,6 +82,16 @@ function RouteComponent() {
     today.setHours(0, 0, 0, 0);
     return date < today;
   };
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-white">Error loading calendar data.</div>
+        </div>
+      </Layout>
+    );
+  }
 
   const renderCalendar = () => {
     const { daysInMonth, startingDayOfWeek, firstDay } =
@@ -172,7 +176,7 @@ function RouteComponent() {
   return (
     <Layout>
       <div className=" h-full flex flex-col overflow-hidden bg-[#322350]rounded-xl">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 shrink-0">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
             <span className="hidden sm:inline text-white">Task Calendar</span>
@@ -196,7 +200,7 @@ function RouteComponent() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-white sm:text-xl font-semibold text-gray-900 min-w-[140px] sm:min-w-[200px] text-center px-2">
+              <span className="text-white sm:text-xl font-semibold min-w-[140px] sm:min-w-[200px] text-center px-2">
                 {getMonthName(currentDate)}
               </span>
               <Button
@@ -211,7 +215,7 @@ function RouteComponent() {
           </div>
         </div>
         <Card className="bg-white border-purple-200 p-2 sm:p-4 flex-1 flex flex-col overflow-hidden shadow-lg">
-          <div className="grid grid-cols-7 gap-px mb-px flex-shrink-0">
+          <div className="grid grid-cols-7 gap-px mb-px shrink-0">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
               <div
                 key={day}
@@ -226,7 +230,7 @@ function RouteComponent() {
             {renderCalendar()}
           </div>
         </Card>
-        <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-600 text-white shrink-0">
+        <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-white shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-300 rounded shadow-sm"></div>
             <span>High Priority</span>
