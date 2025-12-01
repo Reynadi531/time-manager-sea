@@ -1,6 +1,6 @@
 use crate::db::AppState;
 use crate::entities::{prelude::*, task};
-use sea_orm::{ActiveModelTrait, EntityTrait, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -188,3 +188,59 @@ pub async fn update_task_status(
     let updated_task = task.update(db).await.map_err(|e| e.to_string())?;
     Ok(TaskResponse::from(updated_task))
 }
+
+#[tauri::command]
+pub async fn count_task(state: State<'_, AppState>) -> Result<u64, String> {
+    let db = state.db.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let count = Task::find().count(db).await.map_err(|e| e.to_string())?;
+
+
+    Ok(count)
+}
+
+#[tauri::command]
+pub async fn count_task_progress(state: State<'_, AppState>) -> Result<u64, String> {
+    let db = state.db.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let count = Task::find()
+        .filter(task::Column::Status.eq("in_progress"))
+        .count(db)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(count)
+}
+
+#[tauri::command]
+pub async fn count_task_todo(state: State<'_, AppState>) -> Result<u64, String> {
+    let db = state.db.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let count = Task::find()
+        .filter(task::Column::Status.eq("to_do"))
+        .count(db)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(count)
+}
+
+#[tauri::command]
+pub async fn count_task_done(state: State<'_, AppState>) -> Result<u64, String> {
+    let db = state.db.lock().await;
+    let db = db.as_ref().ok_or("Database not initialized")?;
+
+    let count = Task::find()
+        .filter(task::Column::Status.eq("done"))
+        .count(db)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(count)
+}
+
+
+

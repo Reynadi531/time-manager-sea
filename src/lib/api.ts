@@ -67,6 +67,22 @@ export const taskApi = {
     return await invoke("update_task_status", { id, status });
   },
 
+  countAlltask: async (): Promise<number> => {
+    return await invoke("count_task");
+  },
+
+  countProgressTask: async (): Promise<number> => {
+    return await invoke("count_task_progress");
+  },
+
+  countDoneTask: async (): Promise<number> => {
+    return await invoke("count_task_done");
+  },
+
+  countTodoTask: async (): Promise<number> => {
+    return await invoke("count_task_todo");
+  },
+
   delete: async (id: number): Promise<void> => {
     return await invoke("delete_task", { id });
   },

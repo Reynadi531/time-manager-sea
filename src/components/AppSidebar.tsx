@@ -1,4 +1,13 @@
-import { Calendar, Clock, Folder, Mail, Pencil, AlarmClock, Bell, PlusIcon } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  Folder,
+  Mail,
+  Pencil,
+  AlarmClock,
+  Bell,
+  PlusIcon,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -9,7 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 // Button items.
 const buttons = [
@@ -25,10 +34,10 @@ const buttons = [
   },
   {
     key: 2,
-    url: "/boards/new",
+    url: "/",
     icon: PlusIcon,
   },
-]
+];
 
 // Menu items.
 const items = [
@@ -47,17 +56,17 @@ const items = [
     url: "/calender",
     icon: Calendar,
   },
-  {
-    title: "Timesheet",
-    url: "/timesheet",
-    icon: Clock,
-  },
+  // {
+  //   title: "Timesheet",
+  //   url: "/timesheet",
+  //   icon: Clock,
+  // },
   {
     title: "Reports",
     url: "/reports",
     icon: Mail,
   },
-]
+];
 
 export function AppSidebar() {
   return (
@@ -65,7 +74,9 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup className="">
           <SidebarGroupContent>
-            <SidebarGroupLabel className="text-xl font-bold tracking-wider text-white my-4">Time Manager SEA</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xl font-bold tracking-wider text-white my-4">
+              Time Manager SEA
+            </SidebarGroupLabel>
             <SidebarMenu className="flex flex-row justify-center items-center gap-3 px-2">
               {buttons.map((button) => (
                 <SidebarMenuItem key={button.key}>
@@ -97,5 +108,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
