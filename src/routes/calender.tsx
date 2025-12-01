@@ -20,13 +20,11 @@ interface DayTasks {
 function RouteComponent() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const {
-    data: tasks = [],
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["tasks"],
-    queryFn: taskApi.getAllTasks,
+    queryFn: async () => {
+      return await taskApi.getAllTasks();
+    },
   });
 
   const getMonthName = (date: Date) => {
@@ -45,17 +43,19 @@ function RouteComponent() {
   };
 
   const getTasksForDate = (date: Date): Task[] => {
-    return (
-      tasks?.filter((task) => {
-        if (!task.due_date) return false;
-        const taskDate = new Date(task.due_date);
-        return (
-          taskDate.getDate() === date.getDate() &&
-          taskDate.getMonth() === date.getMonth() &&
-          taskDate.getFullYear() === date.getFullYear()
-        );
-      }) || []
-    );
+    console.log(data);
+    if (!data) return [];
+    return data?.filter((task) => {
+      if (!task.due_date) return false;
+      const taskDate = new Date(
+        task.due_date.replace(" ", "T").replace(/\s+/g, "")
+      );
+      return (
+        taskDate.getDate() === date.getDate() &&
+        taskDate.getMonth() === date.getMonth() &&
+        taskDate.getFullYear() === date.getFullYear()
+      );
+    });
   };
 
   const goToPreviousMonth = () => {
@@ -127,26 +127,30 @@ function RouteComponent() {
             {day}
           </div>
           <div className="space-y-0.5 flex-1 overflow-y-auto overflow-x-hidden">
-            {tasksForDay.slice(0, 2).map((task) => (
-              <div
-                key={task.id}
-                className={`text-[9px] sm:text-[10px] lg:text-xs p-0.5 sm:p-1 rounded truncate shadow-sm ${
-                  task.priority === "high"
-                    ? "bg-red-100 text-red-800 border border-red-300"
-                    : task.priority === "medium"
-                      ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
-                      : "bg-purple-50 text-purple-700 border border-purple-200"
-                }`}
-                title={task.title}
-              >
-                {task.title}
-              </div>
-            ))}
-            {tasksForDay.length > 2 && (
-              <div className="text-[9px] sm:text-[10px] lg:text-xs text-gray-500 pl-0.5 sm:pl-1">
-                +{tasksForDay.length - 2} more
-              </div>
-            )}
+            {tasksForDay && tasksForDay.length > 0 ? (
+              <>
+                {tasksForDay.slice(0, 2).map((task) => (
+                  <div
+                    key={task.id}
+                    className={`text-[9px] sm:text-[10px] lg:text-xs p-0.5 sm:p-1 rounded truncate shadow-sm ${
+                      task.priority === "high"
+                        ? "bg-red-100 text-red-800 border border-red-300"
+                        : task.priority === "medium"
+                          ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                          : "bg-purple-50 text-purple-700 border border-purple-200"
+                    }`}
+                    title={task.title}
+                  >
+                    {task.title}
+                  </div>
+                ))}
+                {tasksForDay.length > 2 && (
+                  <div className="text-[9px] sm:text-[10px] lg:text-xs text-gray-500 pl-0.5 sm:pl-1">
+                    +{tasksForDay.length - 2} more
+                  </div>
+                )}
+              </>
+            ) : null}
           </div>
         </div>
       );
